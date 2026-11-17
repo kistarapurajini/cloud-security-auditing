@@ -1,0 +1,25 @@
+
+{
+    "access_rules": [
+        {
+            "source_tenant": "Tenant_A",
+            "target_tenant": "Tenant_A",
+            "allowed": true
+        },
+        {
+            "source_tenant": "Tenant_A",
+            "target_tenant": "Tenant_B",
+            "allowed": true
+        },
+        {
+            "source_tenant": "Tenant_B",
+            "target_tenant": "Tenant_C",
+            "allowed": false
+        },
+        {
+            "source_tenant": "Tenant_C",
+            "target_tenant": "Tenant_C",
+            "allowed": true
+        }
+    ]
+}

@@ -1,0 +1,80 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud Security Auditing</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef2f7;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 650px;
+            margin: auto;
+        }
+        h1 { color: #17365d; }
+        button {
+            background: #1769aa;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .result {
+            text-align: left;
+            margin-top: 25px;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cloud Security Auditing System</h1>
+        <p>Multi-Tenant Cloud Misconfiguration Detection</p>
+
+        <form action="/scan" method="POST">
+            <button type="submit">Run Security Audit</button>
+        </form>
+
+        {% if results %}
+        <div class="result">
+
+            <h2>Security Audit Results</h2>
+
+            {% for result in results %}
+                <p>{{ result }}</p>
+            {% endfor %}
+
+            <hr>
+
+            <h2>Machine Learning Analysis</h2>
+
+            <p>
+                <strong>Predicted Risk:</strong>
+                {{ predicted_risk }}
+            </p>
+
+            <hr>
+
+            <h2>Tenant Isolation Audit</h2>
+
+            {% if tenant_results %}
+                {% for result in tenant_results %}
+                    <p>{{ result }}</p>
+                {% endfor %}
+            {% else %}
+                <p>No cross-tenant access detected.</p>
+            {% endif %}
+
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
