@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,6 +10,7 @@
             text-align: center;
             padding: 50px;
         }
+
         .container {
             background: white;
             padding: 30px;
@@ -18,7 +18,9 @@
             max-width: 650px;
             margin: auto;
         }
+
         h1 { color: #17365d; }
+
         button {
             background: #1769aa;
             color: white;
@@ -27,21 +29,54 @@
             border-radius: 6px;
             cursor: pointer;
         }
+
         .result {
             text-align: left;
             margin-top: 25px;
             line-height: 2;
         }
+
+        .error {
+            color: #c62828;
+            margin-top: 20px;
+        }
+
+        input[type="file"] {
+            margin: 20px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
+
         <h1>Cloud Security Auditing System</h1>
+
         <p>Multi-Tenant Cloud Misconfiguration Detection</p>
 
-        <form action="/scan" method="POST">
+        <form action="/scan" method="POST" enctype="multipart/form-data">
+
+            <h3>Upload Cloud Configuration (JSON)</h3>
+
+            <input
+                type="file"
+                name="config_file"
+                accept=".json,application/json"
+            >
+
+            <br>
+
             <button type="submit">Run Security Audit</button>
+
+            <p>Leave the upload empty to scan the default sample configuration.</p>
+
         </form>
+
+        {% if error %}
+            <div class="error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
 
         {% if results %}
         <div class="result">
@@ -75,6 +110,7 @@
 
         </div>
         {% endif %}
+
     </div>
 </body>
 </html>

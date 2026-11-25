@@ -1,9 +1,9 @@
 
+
 import json
 
-def scan_configuration(file_path):
-    with open(file_path, "r") as file:
-        config = json.load(file)
+def scan_config_data(config):
+    """Scan an already loaded cloud configuration."""
 
     findings = []
 
@@ -20,3 +20,12 @@ def scan_configuration(file_path):
         findings.append("No configured risks detected by these checks")
 
     return findings
+
+
+def scan_configuration(file_path):
+    """Scan configuration from an existing JSON file."""
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    return scan_config_data(config)
