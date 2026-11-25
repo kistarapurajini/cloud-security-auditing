@@ -1,5 +1,4 @@
 
-
 from flask import Flask, render_template, request
 from scanner.misconfiguration import scan_configuration, scan_config_data
 from ml_model.predict import predict_risk
@@ -14,7 +13,11 @@ app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
 REQUIRED_FIELDS = [
     "public_access",
     "encryption",
-    "multi_factor_authentication"
+    "multi_factor_authentication",
+    "unrestricted_network_access",
+    "excessive_permissions",
+    "logging_enabled",
+    "secure_storage"
 ]
 
 
@@ -27,8 +30,6 @@ def home():
 def scan():
 
     uploaded_file = request.files.get("config_file")
-    print("Uploaded file:", uploaded_file)
-    print("Filename:", uploaded_file.filename if uploaded_file else "No file") 
 
     try:
         if uploaded_file and uploaded_file.filename:
@@ -37,7 +38,7 @@ def scan():
             if not uploaded_file.filename.lower().endswith(".json"):
                 raise ValueError("Please upload a JSON file.")
 
-            # Read uploaded JSON without saving it
+            # Read uploaded JSON
             config = json.load(uploaded_file)
 
             if not isinstance(config, dict):
@@ -61,16 +62,78 @@ def scan():
             with open(config_file, "r", encoding="utf-8") as file:
                 config = json.load(file)
 
+            if not isinstance(config, dict):
+                raise ValueError("Default JSON must contain a configuration object.")
+
+            # Validate default configuration
+            for field in REQUIRED_FIELDS:
+                if field not in config:
+                    raise ValueError(f"Missing required field: {field}")
+
+                if not isinstance(config[field], bool):
+                    raise ValueError(f"{field} must be true or false.")
+
             results = scan_configuration(config_file)
 
-        # ML risk prediction
+        # Extract AWS S3 configuration
+        s3_config = config.get("s3", {})
+
+        if not isinstance(s3_config, dict):
+            raise ValueError("s3 must contain a configuration object.")
+
+        s3_public_access = 0
+        s3_protection_incomplete = 0
+
+        if s3_config:
+
+            public_grants = ["AllUsers", "AuthenticatedUsers"]
+
+            acl_grants = s3_config.get("public_acl_grants", [])
+            public_policy = s3_config.get("public_bucket_policy", False)
+
+            if not isinstance(acl_grants, list) or not all(
+                isinstance(grant, str) for grant in acl_grants
+            ):
+                raise ValueError("public_acl_grants must be a list of strings.")
+
+            if not isinstance(public_policy, bool):
+                raise ValueError("public_bucket_policy must be true or false.")
+
+            if any(grant in public_grants for grant in acl_grants) or public_policy:
+                s3_public_access = 1
+
+            public_access_block = s3_config.get("public_access_block", {})
+
+            if not isinstance(public_access_block, dict):
+                raise ValueError("public_access_block must contain an object.")
+
+            required_protections = [
+                "block_public_acls",
+                "ignore_public_acls",
+                "block_public_policy",
+                "restrict_public_buckets"
+            ]
+
+            if any(
+                public_access_block.get(setting) is not True
+                for setting in required_protections
+            ):
+                s3_protection_incomplete = 1
+
+        # ML risk prediction using all nine features
         predicted_risk = predict_risk(
             int(config["public_access"]),
             int(config["encryption"]),
-            int(config["multi_factor_authentication"])
+            int(config["multi_factor_authentication"]),
+            int(config["unrestricted_network_access"]),
+            int(config["excessive_permissions"]),
+            int(config["logging_enabled"]),
+            int(config["secure_storage"]),
+            s3_public_access,
+            s3_protection_incomplete
         )
 
-        # Tenant isolation audit remains unchanged
+        # Tenant isolation audit
         tenant_file = "dataset/tenant_access.json"
         tenant_results = check_tenant_isolation(tenant_file)
 
@@ -90,3 +153,5 @@ def scan():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+

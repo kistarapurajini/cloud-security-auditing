@@ -1,5 +1,10 @@
+
 {
     "public_access": true,
     "encryption": false,
-    "multi_factor_authentication": false
+    "multi_factor_authentication": false,
+    "unrestricted_network_access": true,
+    "excessive_permissions": true,
+    "logging_enabled": false,
+    "secure_storage": false
 }
