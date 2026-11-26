@@ -3,23 +3,30 @@
 <html>
 <head>
     <title>Cloud Security Auditing</title>
+
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background: #eef2f7;
             text-align: center;
-            padding: 50px;
+            padding: 30px;
         }
 
         .container {
             background: white;
             padding: 30px;
             border-radius: 12px;
-            max-width: 650px;
+            max-width: 900px;
             margin: auto;
         }
 
-        h1 { color: #17365d; }
+        h1 {
+            color: #17365d;
+        }
+
+        h2 {
+            color: #1769aa;
+        }
 
         button {
             background: #1769aa;
@@ -30,10 +37,14 @@
             cursor: pointer;
         }
 
+        button:hover {
+            background: #104d80;
+        }
+
         .result {
             text-align: left;
             margin-top: 25px;
-            line-height: 2;
+            line-height: 1.8;
         }
 
         .error {
@@ -44,73 +55,181 @@
         input[type="file"] {
             margin: 20px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #17365d;
+            color: white;
+        }
+
+        .best-model {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .note {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 7px 4px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="container">
 
-        <h1>Cloud Security Auditing System</h1>
+<div class="container">
 
-        <p>Multi-Tenant Cloud Misconfiguration Detection</p>
+    <h1>Cloud Security Auditing System</h1>
 
-        <form action="/scan" method="POST" enctype="multipart/form-data">
+    <p>Multi-Tenant Cloud Misconfiguration Detection</p>
 
-            <h3>Upload Cloud Configuration (JSON)</h3>
+    <form action="/scan" method="POST"
+          enctype="multipart/form-data">
 
-            <input
-                type="file"
-                name="config_file"
-                accept=".json,application/json"
-            >
+        <h3>Upload Cloud Configuration (JSON)</h3>
 
-            <br>
+        <input
+            type="file"
+            name="config_file"
+            accept=".json,application/json"
+        >
 
-            <button type="submit">Run Security Audit</button>
+        <br>
 
-            <p>Leave the upload empty to scan the default sample configuration.</p>
+        <button type="submit">Run Security Audit</button>
 
-        </form>
+        <p>
+            Leave the upload empty to scan the default sample configuration.
+        </p>
 
-        {% if error %}
-            <div class="error">
-                <strong>Error:</strong> {{ error }}
-            </div>
-        {% endif %}
+    </form>
 
-        {% if results %}
-        <div class="result">
+    {% if error %}
+        <div class="error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
 
-            <h2>Security Audit Results</h2>
+    {% if results %}
 
-            {% for result in results %}
-                <p>{{ result }}</p>
-            {% endfor %}
+    <div class="result">
 
-            <hr>
+        <h2>Security Audit Results</h2>
 
-            <h2>Machine Learning Analysis</h2>
+        {% for result in results %}
+            <p>{{ result }}</p>
+        {% endfor %}
+
+        <hr>
+
+        <h2>Machine Learning Analysis</h2>
+
+        <p>
+            <strong>Predicted Risk:</strong>
+            {{ predicted_risk }}
+        </p>
+
+        <hr>
+
+        <h2>Machine Learning Model Comparison</h2>
+
+        <p>
+            Performance comparison of three machine learning algorithms
+            using the same test dataset.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-score</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for model in model_comparison %}
+                <tr>
+                    <td>{{ model.name }}</td>
+                    <td>{{ model.accuracy }}%</td>
+                    <td>{{ model.precision }}%</td>
+                    <td>{{ model.recall }}%</td>
+                    <td>{{ model.f1_score }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="best-model">
+            <h3>Best Performing Model</h3>
 
             <p>
-                <strong>Predicted Risk:</strong>
-                {{ predicted_risk }}
+                <strong>{{ best_model.name }}</strong>
             </p>
 
-            <hr>
-
-            <h2>Tenant Isolation Audit</h2>
-
-            {% if tenant_results %}
-                {% for result in tenant_results %}
-                    <p>{{ result }}</p>
-                {% endfor %}
-            {% else %}
-                <p>No cross-tenant access detected.</p>
-            {% endif %}
-
+            <p>
+                Macro F1-score:
+                <strong>{{ best_model.f1_score }}%</strong>
+            </p>
         </div>
+
+        <p class="note">
+            Note: Evaluation uses a synthetic dataset with
+            rule-generated labels. These results do not represent
+            real-world cloud security accuracy.
+        </p>
+
+        <hr>
+
+        <h2>Tenant Isolation Audit</h2>
+
+        {% if tenant_results %}
+            {% for result in tenant_results %}
+                <p>{{ result }}</p>
+            {% endfor %}
+        {% else %}
+            <p>No cross-tenant access detected.</p>
         {% endif %}
 
     </div>
+
+    {% endif %}
+
+</div>
+
 </body>
 </html>

@@ -3,11 +3,24 @@ from flask import Flask, render_template, request
 from scanner.misconfiguration import scan_configuration, scan_config_data
 from ml_model.predict import predict_risk
 from scanner.tenant_isolation import check_tenant_isolation
+
 import json
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
 
 app = Flask(__name__)
 
-# Limit uploaded files to 1 MB
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
 
 REQUIRED_FIELDS = [
@@ -21,6 +34,90 @@ REQUIRED_FIELDS = [
 ]
 
 
+def get_model_comparison():
+
+    data = pd.read_csv("dataset/cloud_training_data.csv")
+
+    features = [
+        "public_access",
+        "encryption",
+        "mfa",
+        "unrestricted_network_access",
+        "excessive_permissions",
+        "logging_enabled",
+        "secure_storage",
+        "s3_public_access",
+        "s3_protection_incomplete"
+    ]
+
+    X = data[features]
+    y = data["risk"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.25,
+        random_state=42,
+        stratify=y
+    )
+
+    models = {
+        "Decision Tree": DecisionTreeClassifier(random_state=42),
+
+        "Random Forest": RandomForestClassifier(
+            n_estimators=100,
+            random_state=42
+        ),
+
+        "Logistic Regression": LogisticRegression(
+            max_iter=1000,
+            class_weight="balanced"
+        )
+    }
+
+    comparison_results = []
+
+    for name, model in models.items():
+
+        model.fit(X_train, y_train)
+        predictions = model.predict(X_test)
+
+        comparison_results.append({
+            "name": name,
+            "accuracy": round(
+                accuracy_score(y_test, predictions) * 100, 2
+            ),
+            "precision": round(
+                precision_score(
+                    y_test, predictions,
+                    average="macro",
+                    zero_division=0
+                ) * 100, 2
+            ),
+            "recall": round(
+                recall_score(
+                    y_test, predictions,
+                    average="macro",
+                    zero_division=0
+                ) * 100, 2
+            ),
+            "f1_score": round(
+                f1_score(
+                    y_test, predictions,
+                    average="macro",
+                    zero_division=0
+                ) * 100, 2
+            )
+        })
+
+    best_model = max(
+        comparison_results,
+        key=lambda result: result["f1_score"]
+    )
+
+    return comparison_results, best_model
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -29,57 +126,70 @@ def home():
 @app.route("/scan", methods=["POST"])
 def scan():
 
+
     uploaded_file = request.files.get("config_file")
 
     try:
+
         if uploaded_file and uploaded_file.filename:
 
-            # Check file extension
             if not uploaded_file.filename.lower().endswith(".json"):
                 raise ValueError("Please upload a JSON file.")
 
-            # Read uploaded JSON
             config = json.load(uploaded_file)
 
             if not isinstance(config, dict):
-                raise ValueError("JSON must contain a configuration object.")
+                raise ValueError(
+                    "JSON must contain a configuration object."
+                )
 
-            # Validate required fields
             for field in REQUIRED_FIELDS:
+
                 if field not in config:
-                    raise ValueError(f"Missing required field: {field}")
+                    raise ValueError(
+                        f"Missing required field: {field}"
+                    )
 
                 if not isinstance(config[field], bool):
-                    raise ValueError(f"{field} must be true or false.")
+                    raise ValueError(
+                        f"{field} must be true or false."
+                    )
 
-            # Scan uploaded configuration
             results = scan_config_data(config)
 
         else:
-            # Use existing sample configuration
+
             config_file = "dataset/sample_config.json"
 
             with open(config_file, "r", encoding="utf-8") as file:
                 config = json.load(file)
 
             if not isinstance(config, dict):
-                raise ValueError("Default JSON must contain a configuration object.")
+                raise ValueError(
+                    "Default JSON must contain a configuration object."
+                )
 
-            # Validate default configuration
             for field in REQUIRED_FIELDS:
+
                 if field not in config:
-                    raise ValueError(f"Missing required field: {field}")
+                    raise ValueError(
+                        f"Missing required field: {field}"
+                    )
 
                 if not isinstance(config[field], bool):
-                    raise ValueError(f"{field} must be true or false.")
+                    raise ValueError(
+                        f"{field} must be true or false."
+                    )
 
             results = scan_configuration(config_file)
 
-        # Extract AWS S3 configuration
+        # Extract S3 configuration
         s3_config = config.get("s3", {})
 
         if not isinstance(s3_config, dict):
-            raise ValueError("s3 must contain a configuration object.")
+            raise ValueError(
+                "s3 must contain a configuration object."
+            )
 
         s3_public_access = 0
         s3_protection_incomplete = 0
@@ -89,23 +199,36 @@ def scan():
             public_grants = ["AllUsers", "AuthenticatedUsers"]
 
             acl_grants = s3_config.get("public_acl_grants", [])
-            public_policy = s3_config.get("public_bucket_policy", False)
+            public_policy = s3_config.get(
+                "public_bucket_policy", False
+            )
 
             if not isinstance(acl_grants, list) or not all(
                 isinstance(grant, str) for grant in acl_grants
             ):
-                raise ValueError("public_acl_grants must be a list of strings.")
+                raise ValueError(
+                    "public_acl_grants must be a list of strings."
+                )
 
             if not isinstance(public_policy, bool):
-                raise ValueError("public_bucket_policy must be true or false.")
+                raise ValueError(
+                    "public_bucket_policy must be true or false."
+                )
 
-            if any(grant in public_grants for grant in acl_grants) or public_policy:
+            if (
+                any(grant in public_grants for grant in acl_grants)
+                or public_policy
+            ):
                 s3_public_access = 1
 
-            public_access_block = s3_config.get("public_access_block", {})
+            public_access_block = s3_config.get(
+                "public_access_block", {}
+            )
 
             if not isinstance(public_access_block, dict):
-                raise ValueError("public_access_block must contain an object.")
+                raise ValueError(
+                    "public_access_block must contain an object."
+                )
 
             required_protections = [
                 "block_public_acls",
@@ -120,7 +243,7 @@ def scan():
             ):
                 s3_protection_incomplete = 1
 
-        # ML risk prediction using all nine features
+        # Existing Decision Tree prediction
         predicted_risk = predict_risk(
             int(config["public_access"]),
             int(config["encryption"]),
@@ -133,18 +256,27 @@ def scan():
             s3_protection_incomplete
         )
 
-        # Tenant isolation audit
+        # Existing tenant isolation audit
         tenant_file = "dataset/tenant_access.json"
         tenant_results = check_tenant_isolation(tenant_file)
+
+
 
         return render_template(
             "index.html",
             results=results,
             predicted_risk=predicted_risk,
-            tenant_results=tenant_results
+            tenant_results=tenant_results,
+            model_comparison=model_comparison,
+            best_model=best_model
         )
 
-    except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as error:
+    except (
+        ValueError,
+        json.JSONDecodeError,
+        UnicodeDecodeError
+    ) as error:
+
         return render_template(
             "index.html",
             error=str(error)
@@ -153,5 +285,3 @@ def scan():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
