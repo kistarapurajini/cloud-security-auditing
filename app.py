@@ -126,13 +126,13 @@ def home():
 @app.route("/scan", methods=["POST"])
 def scan():
 
-
     uploaded_file = request.files.get("config_file")
 
     try:
 
         if uploaded_file and uploaded_file.filename:
 
+            # Validate uploaded file
             if not uploaded_file.filename.lower().endswith(".json"):
                 raise ValueError("Please upload a JSON file.")
 
@@ -143,6 +143,7 @@ def scan():
                     "JSON must contain a configuration object."
                 )
 
+            # Validate cloud configuration fields
             for field in REQUIRED_FIELDS:
 
                 if field not in config:
@@ -155,10 +156,23 @@ def scan():
                         f"{field} must be true or false."
                     )
 
-            results = scan_config_data(config)
+            # Get tenant information from uploaded JSON
+            tenant_data = config.get("tenant_access")
+
+            if tenant_data is None:
+                raise ValueError(
+                    "Missing tenant_access information in uploaded JSON."
+                )
+
+            # Remove tenant data before cloud scanning
+            cloud_config = config.copy()
+            cloud_config.pop("tenant_access", None)
+
+            results = scan_config_data(cloud_config)
 
         else:
 
+            # Load default cloud configuration
             config_file = "dataset/sample_config.json"
 
             with open(config_file, "r", encoding="utf-8") as file:
@@ -169,6 +183,7 @@ def scan():
                     "Default JSON must contain a configuration object."
                 )
 
+            # Validate default configuration
             for field in REQUIRED_FIELDS:
 
                 if field not in config:
@@ -182,6 +197,12 @@ def scan():
                     )
 
             results = scan_configuration(config_file)
+
+            # Load default tenant information
+            tenant_file = "dataset/tenant_access.json"
+
+            with open(tenant_file, "r", encoding="utf-8") as file:
+                tenant_data = json.load(file)
 
         # Extract S3 configuration
         s3_config = config.get("s3", {})
@@ -243,7 +264,7 @@ def scan():
             ):
                 s3_protection_incomplete = 1
 
-        # Existing Decision Tree prediction
+        # ML risk prediction
         predicted_risk = predict_risk(
             int(config["public_access"]),
             int(config["encryption"]),
@@ -256,11 +277,11 @@ def scan():
             s3_protection_incomplete
         )
 
-        # Existing tenant isolation audit
-        tenant_file = "dataset/tenant_access.json"
-        tenant_results = check_tenant_isolation(tenant_file)
+        # Tenant isolation audit
+        tenant_results = check_tenant_isolation(tenant_data)
 
-
+        # Compare ML models
+        model_comparison, best_model = get_model_comparison()
 
         return render_template(
             "index.html",
