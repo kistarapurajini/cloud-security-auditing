@@ -1,107 +1,845 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Cloud Security Auditing</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudGuard | Security Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --navy: #101b35;
+            --blue: #3978f6;
+            --bg: #f4f7fc;
+            --text: #17233b;
+            --muted: #78859c;
+            --border: #e8edf5;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #eef2f7;
-            text-align: center;
-            padding: 30px;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
         }
 
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 900px;
-            margin: auto;
+        .layout {
+            display: flex;
+            min-height: 100vh;
         }
 
-        h1 {
-            color: #17365d;
-        }
+        /* Sidebar */
 
-        h2 {
-            color: #1769aa;
-        }
-
-        button {
-            background: #1769aa;
+        .sidebar {
+            width: 250px;
+            background: var(--navy);
             color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+            padding: 28px 18px;
+            flex-shrink: 0;
         }
 
-        button:hover {
-            background: #104d80;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px 35px;
         }
 
-        .result {
-            text-align: left;
-            margin-top: 25px;
-            line-height: 1.8;
+        .brand-icon {
+            background: #3978f6;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 22px;
         }
 
-        .error {
-            color: #c62828;
-            margin-top: 20px;
+        .brand h2 {
+            font-size: 20px;
+            color: white;
+        }
+
+        .brand span {
+            display: block;
+            color: #9eacc8;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .nav-title {
+            color: #7f8da9;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            padding: 15px 12px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #b7c3da;
+            text-decoration: none;
+            padding: 13px 14px;
+            border-radius: 9px;
+            margin-bottom: 7px;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #24385e;
+            color: white;
+        }
+
+        .nav-link.active {
+            border-left: 3px solid #5590ff;
+        }
+
+        .sidebar-note {
+            margin-top: 45px;
+            padding: 15px;
+            background: #1b2b4c;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #c5d1e7;
+            line-height: 1.7;
+        }
+
+        .sidebar-note strong {
+            color: white;
+        }
+
+        
+        /* Main content */
+
+        .main {
+              flex: 1;
+              min-width: 0;
+              padding: 30px 36px;
+        }
+
+        /* Security overview hero banner */
+
+        .overview-hero {
+                background: linear-gradient(120deg, #142b52, #2866c7, #3978f6);
+                color: white;
+                padding: 30px 32px;
+                border-radius: 16px;
+                margin-bottom: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 20px;
+                box-shadow: 0 8px 24px rgba(39, 99, 190, 0.16);
+        }
+
+        .overview-hero .eyebrow {
+                color: #c5dcff;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 2px;
+                margin-bottom: 12px;
+        }
+
+        .overview-hero h1 {
+            font-size: 29px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .overview-hero p {
+                color: #e0eaff;
+                font-size: 13px;
+                line-height: 1.6;
+        }
+
+        .overview-hero .hero-status {
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                padding: 11px 16px;
+                border-radius: 30px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+                .overview-hero {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        padding: 24px 20px;
+           }
+
+        .overview-hero h1 {
+                font-size: 23px;
+        }
+        }
+
+
+        .status {
+            background: #e8f8ef;
+            color: #16834a;
+            border-radius: 30px;
+
+            padding: 9px 15px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .section-heading {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 17px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 17px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 21px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 3px 12px rgba(25, 45, 85, 0.03);
+        }
+
+        .card-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 25px;
+            font-weight: 800;
+            margin-top: 13px;
+        }
+
+        .card-description {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .blue { color: #3978f6; }
+        .red { color: #dc414c; }
+        .orange { color: #d88b22; }
+        .green { color: #15965a; }
+
+        /* Panels */
+
+        .panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 12px rgba(25, 45, 85, 0.03);
+        }
+
+        .panel h2 {
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+
+        .panel-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Upload */
+
+        .upload-area {
+            background: #f8faff;
+            border: 2px dashed #cbd8f1;
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+        }
+
+        .upload-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .upload-area h3 {
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .upload-area p {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 17px;
         }
 
         input[type="file"] {
-            margin: 20px;
+            display: block;
+            max-width: 100%;
+            margin: 0 auto 15px;
+            font-family: inherit;
+            font-size: 12px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
+        .file-name {
+            font-size: 12px;
+            color: var(--blue);
+            margin-bottom: 12px;
         }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px 8px;
-            text-align: center;
-        }
-
-        th {
-            background: #17365d;
+        .scan-button {
+            background: var(--blue);
             color: white;
-        }
-
-        .best-model {
-            background: #e8f5e9;
-            padding: 15px;
+            border: none;
+            padding: 13px 27px;
             border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .note {
-            color: #666;
+            font-weight: 700;
             font-size: 13px;
-            line-height: 1.5;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        @media (max-width: 650px) {
-            body {
-                padding: 10px;
+        .scan-button:hover {
+            background: #245ed0;
+            transform: translateY(-1px);
+        }
+
+        .upload-note {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 14px;
+        }
+
+        
+/* Professional Security Findings */
+
+.findings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.findings-count {
+    background: #edf3ff;
+    color: #3978f6;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.finding-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 17px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-left: 4px solid #d88b22;
+    border-radius: 11px;
+    transition: 0.2s;
+}
+
+.finding-card:hover {
+    box-shadow: 0 5px 16px rgba(25, 45, 85, 0.07);
+    transform: translateY(-2px);
+}
+
+.finding-card.high {
+    border-left-color: #dc414c;
+}
+
+.finding-card.medium {
+    border-left-color: #e5a12b;
+}
+
+.finding-card.critical {
+    border-left-color: #a91f35;
+}
+
+.finding-card.low {
+    border-left-color: #15965a;
+}
+
+.finding-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    display: grid;
+    place-items: center;
+    background: #fff0f0;
+    border-radius: 10px;
+    font-size: 17px;
+}
+
+.finding-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.finding-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 9px;
+    flex-wrap: wrap;
+}
+
+.finding-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #17233b;
+    line-height: 1.6;
+}
+
+.finding-description {
+    color: #78859c;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 11px;
+    overflow-wrap: anywhere;
+}
+
+.recommendation {
+    background: #f4f8ff;
+    border-radius: 8px;
+    padding: 11px 13px;
+    color: #45618d;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.recommendation strong {
+    color: #2866c7;
+}
+
+.severity {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 6px 11px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.severity.high {
+    color: #c8323e;
+    background: #fff0f0;
+}
+
+.severity.medium {
+    color: #b87512;
+    background: #fff6e5;
+}
+
+.severity.critical {
+    color: white;
+    background: #b42332;
+}
+
+.severity.low {
+    color: #16834a;
+    background: #e8f8ef;
+}
+
+@media (max-width: 500px) {
+    .finding-card {
+        padding: 13px;
+        gap: 10px;
+    }
+
+    .finding-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+}
+        
+/* Machine Learning Analysis */
+
+.ml-risk-card {
+    background: linear-gradient(120deg, #142b52, #2866c7);
+    color: white;
+    border-radius: 14px;
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.ml-risk-card .ml-label {
+    color: #c5dcff;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.ml-risk-card .ml-value {
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.ml-risk-card .ml-description {
+    color: #dce9ff;
+    font-size: 12px;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.ml-icon {
+    font-size: 42px;
+    background: rgba(255,255,255,0.13);
+    padding: 15px;
+    border-radius: 14px;
+}
+
+.ml-info {
+    margin-top: 17px;
+    padding: 15px;
+    background: #f4f8ff;
+    border: 1px solid #e1eaff;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #526482;
+}
+
+.ml-info strong {
+    color: #2866c7;
+}
+
+@media (max-width: 500px) {
+    .ml-risk-card .ml-value {
+        font-size: 24px;
+    }
+
+    .ml-icon {
+        font-size: 30px;
+        padding: 10px;
+    }
+}
+
+
+        
+/* Professional Model Comparison */
+
+.model-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 600px;
+    font-size: 12px;
+}
+
+.model-table th {
+    background: #142b52;
+    color: white;
+    padding: 16px 14px;
+    text-align: left;
+}
+
+.model-table th:first-child {
+    border-radius: 9px 0 0 0;
+}
+
+.model-table th:last-child {
+    border-radius: 0 9px 0 0;
+}
+
+.model-table td {
+    padding: 17px 14px;
+    border-bottom: 1px solid #e8edf5;
+    color: #52617b;
+}
+
+.model-table tr:hover td {
+    background: #f5f8ff;
+}
+
+.model-name {
+    color: #17233b;
+    font-weight: 700;
+}
+
+.metric-value {
+    color: #2866c7;
+    font-weight: 700;
+}
+
+.best-model {
+    background: linear-gradient(120deg, #eaf8f0, #f4fbf7);
+    border: 1px solid #ccebd9;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    color: #176b40;
+    line-height: 1.8;
+}
+
+.best-model-title {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.best-model-name {
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.best-model-score {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.model-note {
+    margin-top: 16px;
+    padding: 13px;
+    background: #f4f7fc;
+    border-radius: 9px;
+    color: #78859c;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+    
+/* Professional Tenant Isolation Design */
+
+.tenant-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px;
+    margin-bottom: 13px;
+    background: #f8faff;
+    border: 1px solid #e5ebf5;
+    border-left: 4px solid #15965a;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #344563;
+    transition: all 0.2s ease;
+}
+
+.tenant-item::before {
+    content: "✓";
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    height: 30px;
+    background: #e8f8ef;
+    color: #15965a;
+    border-radius: 9px;
+    font-weight: 800;
+}
+
+.tenant-item:has(strong),
+.tenant-item:has(.high) {
+    border-left-color: #dc414c;
+}
+
+.tenant-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(25, 45, 85, 0.07);
+}
+
+.empty-state {
+    padding: 25px;
+    text-align: center;
+    background: #f8faff;
+    border: 1px dashed #cbd8f1;
+    border-radius: 12px;
+    color: #78859c;
+    font-size: 13px;
+}
+
+/* Professional Tenant Isolation Design */
+
+.tenant-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px;
+    margin-bottom: 13px;
+    background: #f8faff;
+    border: 1px solid #e5ebf5;
+    border-left: 4px solid #15965a;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.tenant-item.high {
+    background: #fff8f8;
+    border-left-color: #dc414c;
+}
+
+.tenant-item.safe {
+    background: #f2fbf6;
+    border-left-color: #15965a;
+}
+
+.tenant-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(25, 45, 85, 0.07);
+}
+
+.tenant-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 17px;
+}
+
+.tenant-item.high .tenant-icon {
+    background: #ffe8e8;
+    color: #dc414c;
+}
+
+.tenant-item.safe .tenant-icon {
+    background: #e1f6e9;
+    color: #15965a;
+}
+
+.tenant-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tenant-title {
+    color: #17233b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.tenant-description {
+    color: #78859c;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.tenant-badge {
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.tenant-item.high .tenant-badge {
+    color: #c8323e;
+    background: #ffe8e8;
+}
+
+.tenant-item.safe .tenant-badge {
+    color: #16834a;
+    background: #e1f6e9;
+}
+
+.empty-state {
+    padding: 25px;
+    text-align: center;
+    background: #f8faff;
+    border: 1px dashed #cbd8f1;
+    border-radius: 12px;
+    color: #78859c;
+    font-size: 13px;
+}
+
+
+        /* Responsive */
+
+        @media (max-width: 1050px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 750px) {
+            .layout {
+                display: block;
             }
 
-            .container {
-                padding: 15px;
+            .sidebar {
+                width: 100%;
+                padding: 16px;
             }
 
-            table {
+            .brand {
+                padding-bottom: 15px;
+            }
+
+            .nav-title,
+            .sidebar-note {
+                display: none;
+            }
+
+            .sidebar nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .nav-link {
+                padding: 9px 11px;
+                margin: 0;
                 font-size: 11px;
             }
 
-            th, td {
-                padding: 7px 4px;
+            .main {
+                padding: 22px 15px;
+            }
+
+            .topbar h1 {
+                font-size: 21px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .cards {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .card-value {
+                font-size: 21px;
+            }
+
+            .panel {
+                padding: 17px;
+            }
+
+            .status {
+                font-size: 10px;
             }
         }
     </style>
@@ -109,127 +847,506 @@
 
 <body>
 
-<div class="container">
+<div class="layout">
 
-    <h1>Cloud Security Auditing System</h1>
+    <!-- SIDEBAR -->
 
-    <p>Multi-Tenant Cloud Misconfiguration Detection</p>
+    <aside class="sidebar">
 
-    <form action="/scan" method="POST"
-          enctype="multipart/form-data">
-
-        <h3>Upload Cloud Configuration (JSON)</h3>
-
-        <input
-            type="file"
-            name="config_file"
-            accept=".json,application/json"
-        >
-
-        <br>
-
-        <button type="submit">Run Security Audit</button>
-
-        <p>
-            Leave the upload empty to scan the default sample configuration.
-        </p>
-
-    </form>
-
-    {% if error %}
-        <div class="error">
-            <strong>Error:</strong> {{ error }}
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <div>
+                <h2>CloudGuard</h2>
+                <span>Cloud Security Platform</span>
+            </div>
         </div>
-    {% endif %}
 
-    {% if results %}
+        <div class="nav-title">MAIN MENU</div>
 
-    <div class="result">
+        <nav>
+            <a href="#dashboard" class="nav-link active">▦ Dashboard</a>
+            <a href="#cloud-audit" class="nav-link">☁ Cloud Audit</a>
+            <a href="#tenant-audit" class="nav-link">♙ Tenant Isolation</a>
+            <a href="#ml-analysis" class="nav-link">◈ ML Analysis</a>
+            <a href="#model-comparison" class="nav-link">▤ Model Comparison</a>
+        </nav>
 
-        <h2>Security Audit Results</h2>
+        <div class="sidebar-note">
+            <strong>Project Status</strong><br>
+            JSON-based security auditing prototype.<br>
+            <span style="color:#8fa5ca;">No live AWS connection.</span>
+        </div>
 
-        {% for result in results %}
-            <p>{{ result }}</p>
-        {% endfor %}
+    </aside>
 
-        <hr>
 
-        <h2>Machine Learning Analysis</h2>
+    <!-- MAIN DASHBOARD -->
+
+    <main class="main" id="dashboard">
+        
+<header class="overview-hero">
+    <div>
+        <div class="eyebrow">CLOUD SECURITY OPERATIONS CENTER</div>
+
+        <h1>Cloud Security Overview</h1>
 
         <p>
-            <strong>Predicted Risk:</strong>
-            {{ predicted_risk }}
+            Monitor cloud misconfigurations, analyze security risks,
+            and review multi-tenant isolation findings.
         </p>
+    </div>
 
-        <hr>
+    <div class="hero-status">● Prototype Active</div>
+</header>
 
-        <h2>Machine Learning Model Comparison</h2>
 
-        <p>
-            Performance comparison of three machine learning algorithms
-            using the same test dataset.
-        </p>
 
-        <table>
+        {% if error %}
+            <div class="error">
+                <strong>Audit Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+
+        <!-- SUMMARY CARDS -->
+
+        {% set counts = namespace(high=0, medium=0, critical=0) %}
+
+        {% if results %}
+            {% for result in results %}
+                {% set text_result = result|string|upper %}
+                {% if 'CRITICAL' in text_result %}
+                    {% set counts.critical = counts.critical + 1 %}
+                {% elif 'HIGH' in text_result %}
+                    {% set counts.high = counts.high + 1 %}
+                {% elif 'MEDIUM' in text_result %}
+                    {% set counts.medium = counts.medium + 1 %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <h2 class="section-heading">Audit Summary</h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <div class="card-label">Total Findings</div>
+                <div class="card-value blue">
+                    {{ results|length if results else 0 }}
+                </div>
+                <div class="card-description">Cloud audit findings</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">High Risk Findings</div>
+                <div class="card-value red">
+                    {{ counts.high + counts.critical }}
+                </div>
+                <div class="card-description">High and critical severity</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">ML Predicted Risk</div>
+                <div class="card-value orange">
+                    {{ predicted_risk if predicted_risk else 'Pending' }}
+                </div>
+                <div class="card-description">Decision Tree prediction</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Tenant Audit</div>
+                <div class="card-value green">
+                    {{ 'Completed' if tenant_results else 'Pending' }}
+                </div>
+                <div class="card-description">Access rule analysis</div>
+            </div>
+
+        </div>
+
+
+        <!-- UPLOAD SECTION -->
+
+        <section class="panel" id="cloud-audit">
+
+            <h2>☁ Cloud Configuration Audit</h2>
+
+            <p class="panel-subtitle">
+                Upload a JSON cloud configuration file to identify
+                security misconfigurations and potential risks.
+            </p>
+
+            <form action="/scan" method="POST" enctype="multipart/form-data">
+
+                <div class="upload-area">
+
+                    <div class="upload-icon">📂</div>
+
+                    <h3>Upload your cloud configuration</h3>
+
+                    <p>Select a JSON file from your computer</p>
+
+                    <input
+                        type="file"
+                        name="config_file"
+                        accept=".json,application/json"
+                        id="configFile"
+                    >
+
+                    <div class="file-name" id="fileName">
+                        No file selected
+                    </div>
+
+                    <button type="submit" class="scan-button">
+                        🔍 Run Security Audit
+                    </button>
+
+                    <div class="upload-note">
+                        Leave the upload empty to scan the default sample configuration.
+                    </div>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        {% if results %}
+
+        
+<!-- PROFESSIONAL SECURITY FINDINGS -->
+
+<section class="panel">
+
+    <div class="findings-header">
+        <div>
+            <h2>🛡 Security Audit Findings</h2>
+            <p class="panel-subtitle">
+                Detected security issues and recommended corrective actions.
+            </p>
+        </div>
+
+        <span class="findings-count">
+            {{ results|length }} Findings Detected
+        </span>
+    </div>
+
+    {% for result in results %}
+
+        {% set result_text = result|string|upper %}
+
+        {% if 'CRITICAL' in result_text %}
+            {% set severity_level = 'critical' %}
+            {% set severity_label = 'CRITICAL' %}
+        {% elif 'HIGH' in result_text %}
+            {% set severity_level = 'high' %}
+            {% set severity_label = 'HIGH' %}
+        {% elif 'MEDIUM' in result_text %}
+            {% set severity_level = 'medium' %}
+            {% set severity_label = 'MEDIUM' %}
+        {% else %}
+            {% set severity_level = 'low' %}
+            {% set severity_label = 'INFO' %}
+        {% endif %}
+
+        {% if 'PUBLIC' in result_text %}
+            {% set recommendation = 'Review public access permissions, remove unintended public ACLs or bucket policies, and enable the required S3 Block Public Access protections.' %}
+        {% elif 'ENCRYPTION' in result_text %}
+            {% set recommendation = 'Enable encryption for stored cloud data and verify that the encryption configuration is applied.' %}
+        {% elif 'MFA' in result_text or 'MULTI-FACTOR' in result_text %}
+            {% set recommendation = 'Enable multi-factor authentication for relevant user accounts.' %}
+        {% elif 'NETWORK' in result_text %}
+            {% set recommendation = 'Restrict network access to trusted sources and review unnecessarily open access rules.' %}
+        {% elif 'PERMISSION' in result_text %}
+            {% set recommendation = 'Apply least-privilege access and remove unnecessary permissions.' %}
+        {% elif 'LOGGING' in result_text %}
+            {% set recommendation = 'Enable security logging and review log collection settings.' %}
+        {% elif 'STORAGE' in result_text %}
+            {% set recommendation = 'Review storage security settings and enable the required protections.' %}
+        {% else %}
+            {% set recommendation = 'Review the affected cloud configuration and apply the appropriate security controls.' %}
+        {% endif %}
+
+        <div class="finding-card {{ severity_level }}">
+
+            <div class="finding-icon">⚠️</div>
+
+            <div class="finding-content">
+
+                <div class="finding-top">
+
+                    <div class="finding-title">
+                        {{ result }}
+                    </div>
+
+                    <span class="severity {{ severity_level }}">
+                        {{ severity_label }}
+                    </span>
+
+                </div>
+
+                <div class="finding-description">
+                    Security configuration issue identified by the audit scanner.
+                </div>
+
+                <div class="recommendation">
+                    <strong>Recommended Action:</strong>
+                    {{ recommendation }}
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+</section>
+
+        
+<!-- MACHINE LEARNING ANALYSIS -->
+
+<section class="panel" id="ml-analysis">
+
+    <h2>◈ Machine Learning Risk Analysis</h2>
+
+    <p class="panel-subtitle">
+        Intelligent risk classification using the trained Decision Tree model.
+    </p>
+
+    {% set risk_level = predicted_risk|string|upper %}
+
+    <div class="ml-risk-card">
+
+        <div>
+            <div class="ml-label">ML PREDICTED SECURITY RISK</div>
+
+            <div class="ml-value">
+                {{ predicted_risk if predicted_risk else 'Not Available' }}
+            </div>
+
+            <div class="ml-description">
+                Risk classification based on the uploaded cloud configuration.
+            </div>
+        </div>
+
+        <div class="ml-icon">📊</div>
+
+    </div>
+
+    <div class="ml-info">
+        <strong>Model Used:</strong> Decision Tree Classifier<br>
+        <strong>Analysis Type:</strong> Cloud configuration risk classification<br>
+        <strong>Input:</strong> Security configuration features
+    </div>
+
+    <p class="note">
+        Note: The model is trained using synthetic data with rule-generated
+        labels. The prediction is a prototype result and does not represent
+        independently verified real-world cloud security accuracy.
+    </p>
+
+</section>
+
+
+
+
+        
+<!-- PROFESSIONAL MODEL COMPARISON -->
+
+<section class="panel" id="model-comparison">
+
+    <h2>📈 Machine Learning Model Performance</h2>
+
+    <p class="panel-subtitle">
+        Comparison of three machine learning algorithms
+        evaluated using the same test dataset.
+    </p>
+
+    <div class="table-wrap">
+
+        <table class="model-table">
+
             <thead>
                 <tr>
-                    <th>Model</th>
+                    <th>ML Algorithm</th>
                     <th>Accuracy</th>
                     <th>Precision</th>
                     <th>Recall</th>
-                    <th>F1-score</th>
+                    <th>Macro F1-score</th>
                 </tr>
             </thead>
 
             <tbody>
+
                 {% for model in model_comparison %}
+
                 <tr>
-                    <td>{{ model.name }}</td>
-                    <td>{{ model.accuracy }}%</td>
+                    <td class="model-name">{{ model.name }}</td>
+                    <td class="metric-value">{{ model.accuracy }}%</td>
                     <td>{{ model.precision }}%</td>
                     <td>{{ model.recall }}%</td>
-                    <td>{{ model.f1_score }}%</td>
+                    <td class="metric-value">{{ model.f1_score }}%</td>
                 </tr>
+
                 {% endfor %}
+
             </tbody>
+
         </table>
 
-        <div class="best-model">
-            <h3>Best Performing Model</h3>
+    </div>
 
-            <p>
-                <strong>{{ best_model.name }}</strong>
-            </p>
+    {% if best_model %}
 
-            <p>
-                Macro F1-score:
-                <strong>{{ best_model.f1_score }}%</strong>
-            </p>
+    <div class="best-model">
+
+        <div class="best-model-title">
+            🏆 BEST PERFORMING MODEL
         </div>
 
-        <p class="note">
-            Note: Evaluation uses a synthetic dataset with
-            rule-generated labels. These results do not represent
-            real-world cloud security accuracy.
-        </p>
+        <div class="best-model-name">
+            {{ best_model.name }}
+        </div>
 
-        <hr>
+        <div class="best-model-score">
+            Macro F1-score:
+            <strong>{{ best_model.f1_score }}%</strong>
+        </div>
 
-        <h2>Tenant Isolation Audit</h2>
-
-        {% if tenant_results %}
-            {% for result in tenant_results %}
-                <p>{{ result }}</p>
-            {% endfor %}
-        {% else %}
-            <p>No cross-tenant access detected.</p>
-        {% endif %}
+        <div class="best-model-score">
+            Selected based on the highest macro F1-score.
+        </div>
 
     </div>
 
     {% endif %}
 
+    <div class="model-note">
+        <strong>Evaluation Note:</strong>
+        The evaluation uses a synthetic dataset with rule-generated labels.
+        These scores demonstrate performance on the test split and do not
+        represent independently verified real-world cloud security accuracy.
+    </div>
+
+</section>
+
+            
+<!-- PROFESSIONAL TENANT ISOLATION -->
+
+<section class="panel" id="tenant-audit">
+
+
+
+        
+<!-- PROFESSIONAL TENANT ISOLATION -->
+
+<section class="panel" id="tenant-audit">
+
+    <div class="findings-header">
+        <div>
+            <h2>♙ Tenant Isolation Audit</h2>
+            <p class="panel-subtitle">
+                Monitor cross-tenant access and identify
+                potential multi-tenant security violations.
+            </p>
+        </div>
+
+        <span class="findings-count">
+            {{ tenant_results|length if tenant_results else 0 }} Findings
+        </span>
+    </div>
+
+    {% if tenant_results %}
+
+        {% for result in tenant_results %}
+
+            {% set result_text = result|string|upper %}
+
+            {% if 'HIGH:' in result_text %}
+                {% set tenant_status = 'high' %}
+                {% set tenant_label = 'HIGH RISK' %}
+                {% set tenant_icon = '⚠️' %}
+                {% set tenant_description = 'Unauthorized cross-tenant access detected.' %}
+            {% else %}
+                {% set tenant_status = 'safe' %}
+                {% set tenant_label = 'SECURE' %}
+                {% set tenant_icon = '✓' %}
+                {% set tenant_description = 'No unauthorized cross-tenant access detected.' %}
+            {% endif %}
+
+            <div class="tenant-item {{ tenant_status }}">
+
+                <div class="tenant-icon">
+                    {{ tenant_icon }}
+                </div>
+
+                <div class="tenant-content">
+
+                    <div class="tenant-title">
+                        {{ result }}
+                    </div>
+
+                    <div class="tenant-description">
+                        {{ tenant_description }}
+                    </div>
+
+                </div>
+
+                <span class="tenant-badge">
+                    {{ tenant_label }}
+                </span>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-state">
+            No tenant audit findings are available.
+        </div>
+
+    {% endif %}
+
+</section>
+
+
+
+        {% else %}
+
+        <section class="panel">
+            <h2>Welcome to CloudGuard</h2>
+            <p class="panel-subtitle">
+                Upload a cloud configuration and run your first security audit.
+                Your scan findings, ML prediction, model comparison and tenant
+                isolation results will appear here.
+            </p>
+        </section>
+
+        {% endif %}
+
+
+        <footer>
+            CloudGuard — Multi-Tenant Cloud Security Auditing System
+        </footer>
+
+    </main>
+
 </div>
+
+
+<script>
+    const configFile = document.getElementById("configFile");
+    const fileName = document.getElementById("fileName");
+
+    configFile.addEventListener("change", function () {
+        if (this.files.length > 0) {
+            fileName.textContent = "Selected file: " + this.files[0].name;
+        } else {
+            fileName.textContent = "No file selected";
+        }
+    });
+</script>
 
 </body>
 </html>
